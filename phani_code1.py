@@ -267,3 +267,30 @@ def forecast_elec_pwr_cons_pc(df, country, start_year, end_year):
     sig = np.abs(up-low)/(2.0 * 1e9)
     print()
     print("Electricity power consumption kWh 2030", x*1e9, "+/-", sig*1e9)
+
+
+#Reading Electricity power consumption kWh per capita Data
+df_elec_pwr_cons_pc = data_reading("elec_power_consumption_kwh_per_capita.csv")
+print(df_elec_pwr_cons_pc.describe())
+
+#Finding transpose of Electricity power consumption kWh per capita Data
+df_elec_pwr_cons_pc_tr = data_transpose(df_elec_pwr_cons_pc)
+print(df_elec_pwr_cons_pc_tr.head())
+
+#Selecting years for which correlation is done for further analysis
+df_epc = df_elec_pwr_cons_pc[["1990", '1995', "2000", '2005', "2010", '2014']]
+print(df_epc.describe())
+
+correlation_and_scattermatrix(df_epc)
+year1 = "1990"
+year2 = "2014"
+
+# Extracting columns for clustering
+df_ex = df_epc[[year1, year2]]
+df_ex = df_ex.dropna(axis=0)
+
+# Normalising data and storing minimum and maximum
+df_norm, df_min, df_max = ct.scaler(df_ex)
+
+print()
+print("Number of Clusters and Scores")
