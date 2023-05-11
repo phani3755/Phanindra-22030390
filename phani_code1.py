@@ -95,3 +95,89 @@ def correlation_and_scattermatrix(df):
     plt.show()
 
     return
+
+
+def cluster_number(df, df_normalised):
+    '''
+    cluster_number calculates the best number of clusters based on silhouette
+    score
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Actual data.
+    df_normalised : pandas.DataFrame
+        Normalised data.
+
+    Returns
+    -------
+    INT
+        Best cluster number.
+
+    '''
+
+    clusters = []
+    scores = []
+    # loop over number of clusters
+    for ncluster in range(2, 10):
+
+        # Setting up clusters over number of clusters
+        kmeans = cluster.KMeans(n_clusters=ncluster)
+
+        # Cluster fitting
+        kmeans.fit(df_normalised)
+        lab = kmeans.labels_
+
+        # Silhoutte score over number of clusters
+        print(ncluster, skmet.silhouette_score(df, lab))
+
+        clusters.append(ncluster)
+        scores.append(skmet.silhouette_score(df, lab))
+
+    clusters = np.array(clusters)
+    scores = np.array(scores)
+
+    best_ncluster = clusters[scores == np.max(scores)]
+    print()
+    print('best n clusters', best_ncluster[0])
+
+    return best_ncluster[0]
+
+
+def clusters_and_centers(df, ncluster, y1, y2):
+    '''
+    clusters_and_centers will plot clusters and its centers for given data
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Data for which clusters and centers will be plotted.
+    ncluster : INT
+        Number of clusters.
+    y1 : INT
+        Column 1
+    y2 : INT
+        Column 2
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        Data with cluster labels column added.
+    cen : array
+        Cluster Centers.
+
+    '''
+    # set up the clusterer with the number of expected clusters
+    kmeans = cluster.KMeans(n_clusters=ncluster)
+
+    # Fit the data, results are stored in the kmeans object
+    kmeans.fit(df)
+
+    labels = kmeans.labels_
+    df['labels'] = labels
+    # extract the estimated cluster centres
+    cen = kmeans.cluster_centers_
+
+    cen = np.array(cen)
+    xcen = cen[:, 0]
+    ycen = cen[:, 1]
