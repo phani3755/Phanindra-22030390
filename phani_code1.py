@@ -1,4 +1,4 @@
-coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Created on Fri May 12 02:24:11 2023
 
@@ -207,3 +207,63 @@ def logistic(t, n0, g, t0):
     f = n0 / (1 + np.exp(-g*(t - t0)))
 
     return f
+
+
+def forecast_elec_pwr_cons_pc(df, country, start_year, end_year):
+    '''
+    forecast_Electricity power consumption kWh will analyse data and optimize 
+    to forecast Electricity power consumption kWh of selected country
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Data for which forecasting analysis is performed.
+    country : STR
+        Country for which forecasting is performed.
+    start_year : INT
+        Starting year for forecasting.
+    end_year : INT
+        Ending year for forecasting.
+
+    Returns
+    -------
+    None.
+
+    '''
+    df = df.loc[:, country]
+    df = df.dropna(axis=0)
+
+    df_elec_pwr_cons_pc = pd.DataFrame()
+
+    df_elec_pwr_cons_pc['Year'] = pd.DataFrame(df.index)
+    df_elec_pwr_cons_pc['Elec_Cons_kWh'] = pd.DataFrame(df.values)
+    df_elec_pwr_cons_pc["Year"] = pd.to_numeric(df_elec_pwr_cons_pc["Year"])
+    importlib.reload(opt)
+
+    param, covar = opt.curve_fit(logistic, df_elec_pwr_cons_pc["Year"],
+                                 df_elec_pwr_cons_pc["Elec_Cons_kWh"],
+                                 p0=(1.2e12, 0.03, 1990.0))
+
+    sigma = np.sqrt(np.diag(covar))
+
+    year = np.arange(start_year, end_year)
+    forecast = logistic(year, *param)
+    low, up = err.err_ranges(year, logistic, param, sigma)
+    plt.figure()
+    plt.plot(df_elec_pwr_cons_pc["Year"], df_elec_pwr_cons_pc["Elec_Cons_kWh"],
+             label="Electricity power consumption kWh")
+    plt.plot(year, forecast, label="forecast", color='k')
+    plt.fill_between(year, low, up, color="yellow", alpha=0.7)
+    plt.xlabel("year")
+    plt.ylabel("Electricity power consumption kWh per capita")
+    plt.legend()
+    plt.title(f'Electric power consumption per capita forecast for {country}')
+    plt.savefig(f'{country}.png', bbox_inches='tight', dpi=300)
+    plt.show()
+
+    x = logistic(2030, *param)/1e9
+
+    low, up = err.err_ranges(2030, logistic, param, sigma)
+    sig = np.abs(up-low)/(2.0 * 1e9)
+    print()
+    print("Electricity power consumption kWh 2030", x*1e9, "+/-", sig*1e9)
