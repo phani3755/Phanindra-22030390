@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri May 12 02:24:11 2023
-
-@author: PHANINDRA SAI NAIDU
-"""
-
 # -- coding: utf-8 --
 
 #Importing necessary libraries
@@ -183,14 +176,14 @@ def clusters_and_centers(df, ncluster, y1, y2):
     ycen = cen[:, 1]
 
     # cluster by cluster
-    plt.figure(figsize=(8.0, 8.0))
+    plt.figure(figsize=(10, 10))
 
     cm = plt.cm.get_cmap('tab10')
     sc = plt.scatter(df[y1], df[y2], 10, labels, marker="o", cmap=cm)
     plt.scatter(xcen, ycen, 45, "k", marker="d")
     plt.xlabel(f"Electricity power consumption per capita kWh({y1})")
     plt.ylabel(f"Electricity power consumption per capita kWh({y2})")
-    plt.legend(*sc.legend_elements(), title='clusters')
+    plt.legend(*sc.legend_elements(), title='Clusters')
     plt.title('Electricity power consumption kWh per capita in 1970 and 2020')
     plt.show()
 
@@ -252,7 +245,7 @@ def forecast_elec_pwr_cons_pc(df, country, start_year, end_year):
     plt.figure()
     plt.plot(df_elec_pwr_cons_pc["Year"], df_elec_pwr_cons_pc["Elec_Cons_kWh"],
              label="Electricity power consumption kWh")
-    plt.plot(year, forecast, label="forecast", color='k')
+    plt.plot(year, forecast, label="Forecast")
     plt.fill_between(year, low, up, color="yellow", alpha=0.7)
     plt.xlabel("year")
     plt.ylabel("Electricity power consumption kWh per capita")
@@ -270,7 +263,7 @@ def forecast_elec_pwr_cons_pc(df, country, start_year, end_year):
 
 
 #Reading Electricity power consumption kWh per capita Data
-df_elec_pwr_cons_pc = data_reading("elec_power_consumption_kwh_per_capita.csv")
+df_elec_pwr_cons_pc = data_reading("elec_power_cons_kwh_per_capita.csv")
 print(df_elec_pwr_cons_pc.describe())
 
 #Finding transpose of Electricity power consumption kWh per capita Data
@@ -294,3 +287,33 @@ df_norm, df_min, df_max = ct.scaler(df_ex)
 
 print()
 print("Number of Clusters and Scores")
+ncluster = cluster_number(df_ex, df_norm)
+
+df_norm, cen = clusters_and_centers(df_norm, ncluster, year1, year2)
+
+#Applying backscaling to get actual cluster centers
+scen = ct.backscale(cen, df_min, df_max)
+print('scen\n', scen)
+
+df_ex, scen = clusters_and_centers(df_ex, ncluster, year1, year2)
+
+'''
+We can see some difference in actual cluster centers and 
+backscaled cluster centers.
+'''
+
+print()
+print('Countries in last cluster')
+print(df_ex[df_ex['labels'] == ncluster-1].index.values)
+
+#Forecast Electricity power consumption kWh per capita for Sweden
+forecast_elec_pwr_cons_pc(df_elec_pwr_cons_pc_tr, 'Sweden', 1960, 2031)
+
+#Forecast Electricity power consumption kWh per capita for Luxembourg
+forecast_elec_pwr_cons_pc(df_elec_pwr_cons_pc_tr, 'Luxembourg', 1960, 2031)
+
+#Forecast Electricity power consumption kWh per capita for Pakistan
+forecast_elec_pwr_cons_pc(df_elec_pwr_cons_pc_tr, 'Pakistan', 1970, 2031)
+
+#Forecast Electricity power consumption kWh per capita for Belgium
+forecast_elec_pwr_cons_pc(df_elec_pwr_cons_pc_tr, 'Belgium', 1960, 2031)
