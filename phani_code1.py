@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+coding: utf-8 -*-
 """
 Created on Fri May 12 02:24:11 2023
 
@@ -181,3 +181,29 @@ def clusters_and_centers(df, ncluster, y1, y2):
     cen = np.array(cen)
     xcen = cen[:, 0]
     ycen = cen[:, 1]
+
+    # cluster by cluster
+    plt.figure(figsize=(8.0, 8.0))
+
+    cm = plt.cm.get_cmap('tab10')
+    sc = plt.scatter(df[y1], df[y2], 10, labels, marker="o", cmap=cm)
+    plt.scatter(xcen, ycen, 45, "k", marker="d")
+    plt.xlabel(f"Electricity power consumption per capita kWh({y1})")
+    plt.ylabel(f"Electricity power consumption per capita kWh({y2})")
+    plt.legend(*sc.legend_elements(), title='clusters')
+    plt.title('Electricity power consumption kWh per capita in 1970 and 2020')
+    plt.show()
+
+    print()
+    print(cen)
+
+    return df, cen
+
+
+def logistic(t, n0, g, t0):
+    """Calculates the logistic function with scale factor n0 
+    and growth rate g"""
+
+    f = n0 / (1 + np.exp(-g*(t - t0)))
+
+    return f
